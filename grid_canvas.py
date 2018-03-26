@@ -1,5 +1,5 @@
 import tkinter as tk
-from layer import GriddedCanvasLayer
+from .layer import GriddedCanvasLayer
 
 
 class GriddedCanvas(tk.Canvas):
@@ -53,10 +53,12 @@ class GriddedFrame(tk.Frame):
             self.canvas.configure(yscrollcommand=vbar.set)
             vbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        # Pack canvas
+        # Pack and configure canvas
         self.canvas.pack(expand=True, fill=tk.BOTH, side=tk.LEFT)
+        self.bind("<Configure>", self.on_configure)
 
         self.draw()
+        self._configure()
 
     def select_layer(self, indicator):
         self.currentLayer = self.get_layer(indicator)
@@ -121,3 +123,9 @@ class GriddedFrame(tk.Frame):
         index = self.layers.index(layer)
         if index > 0:
             self.raise_layer(index - 1)
+
+    def on_configure(self, _event):
+        self._configure()
+
+    def _configure(self):
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
