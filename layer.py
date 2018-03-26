@@ -2,15 +2,18 @@ import numpy as np
 
 
 class GriddedCanvasLayer:
-    def __init__(self, canvas, width, height, name="Default"):
+    def __init__(self, manager, canvas, width, height, name="Default"):
+        self.manager = manager
         self.canvas = canvas
         self.elements = np.zeros((width, height), dtype=np.int16)
         self.name = name
 
-    def execute_draw(self, x, y, canvasMethodName: str, *args):
+    def execute_draw(self, x, y, canvasMethodName: str, *args, **kwargs):
         if self[x, y]:
             self.delete((x, y))
-        self[x, y] = getattr(self.canvas, canvasMethodName)(*args)
+        callback = getattr(self.canvas, canvasMethodName)
+        self[x, y] = callback(*args, **kwargs, tag="layer_{}".format(self.name))
+        self.manager.update_z()
 
     def clear(self, at=None):
         if at is not None:
@@ -30,6 +33,13 @@ class GriddedCanvasLayer:
     def show(self):
         for element in self.elements.flat:
             self.canvas.itemconfigure(element, state="normal")
+
+    def configure_item(self, x, y, **kwargs):
+        self.canvas.itemconfig(self[x, y], **kwargs)
+
+    def update_z(self):
+        for element in self.elements.flat:
+            self.canvas.tag_raise(element)
 
     def __getitem__(self, key):
         return self.elements[key]

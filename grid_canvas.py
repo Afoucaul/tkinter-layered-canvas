@@ -89,7 +89,7 @@ class GriddedFrame(tk.Frame):
     def add_layer(self, name):
         self.layers.append(
             GriddedCanvasLayer(
-                self.canvas, self.widthInCells, self.heightInCells, name))
+                self, self.canvas, self.widthInCells, self.heightInCells, name))
 
     def get_center_of_cell(self, x, y):
         """Return the canvas coordinates of the center of a cell
@@ -104,3 +104,7 @@ class GriddedFrame(tk.Frame):
 
     def clear_layer(self, indicator):
         self.get_layer(indicator).clear()
+
+    def update_z(self):
+        for layer in self.layers:
+            layer.update_z()
