@@ -108,3 +108,15 @@ class GriddedFrame(tk.Frame):
     def update_z(self):
         for layer in self.layers:
             layer.update_z()
+
+    def raise_layer(self, indicator):
+        layer = self.get_layer(indicator)
+        index = self.layers.index(layer)
+        self.layers.insert(index+1, self.layers.pop(index))
+        self.update_z()
+
+    def lower_layer(self, indicator):
+        layer = self.get_layer(indicator)
+        index = self.layers.index(layer)
+        if index > 0:
+            self.raise_layer(index - 1)
