@@ -70,10 +70,6 @@ class GriddedFrame(tk.Frame):
                     return layer
             raise KeyError("No layer named '{}'".format(indicator))
 
-    def remove_layer(self, name):
-        layer = self.get_layer(name)
-        self.layers.remove(layer)
-
     def draw(self):
         self.canvas.draw_grid(
             self.cellWidth,
@@ -90,6 +86,11 @@ class GriddedFrame(tk.Frame):
         self.layers.append(
             GriddedCanvasLayer(
                 self, self.canvas, self.widthInCells, self.heightInCells, name))
+
+    def remove_layer(self, indicator):
+        layer = self.get_layer(indicator)
+        layer.clear()
+        self.layers.remove(layer)
 
     def get_center_of_cell(self, x, y):
         """Return the canvas coordinates of the center of a cell
