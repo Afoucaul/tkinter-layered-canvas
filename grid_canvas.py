@@ -35,9 +35,10 @@ class GriddedFrame(tk.Frame):
         self.canvas = GriddedCanvas(
             self, width=self.actualWidth, height=self.actualHeight)
 
+        self.state = tk.BooleanVar()
+
         self.layers = []
-        self.add_layer("Base layer")
-        self.currentLayer = self.layers[0]
+        self.currentLayer = None
 
         # Create and pack horizontal scrollbar
         if self.xScrollable:
@@ -62,15 +63,20 @@ class GriddedFrame(tk.Frame):
 
     def select_layer(self, indicator):
         self.currentLayer = self.get_layer(indicator)
+        self.state.set(True)
 
     def get_layer(self, indicator):
         if isinstance(indicator, int):
             return self.layers[indicator]
+
         elif isinstance(indicator, str):
             for layer in self.layers:
                 if layer.name == indicator:
                     return layer
             raise KeyError("No layer named '{}'".format(indicator))
+
+        elif isinstance(indicator, GriddedCanvasLayer):
+            return indicator
 
     def draw(self):
         self.canvas.draw_grid(
@@ -85,25 +91,44 @@ class GriddedFrame(tk.Frame):
         self.update()
 
     def add_layer(self, name):
+        print("Adding layer {}".format(name))
+        print(self.layers)
         self.layers.append(
             GriddedCanvasLayer(
                 self, self.canvas, self.widthInCells, self.heightInCells, name))
 
+        self.state.set(True)
+        print(self.layers)
+
     def remove_layer(self, indicator):
         layer = self.get_layer(indicator)
+        print("Removing layer {}".format(layer.name))
         layer.clear()
         self.layers.remove(layer)
+
+        self.state.set(True)
 
     def get_center_of_cell(self, x, y):
         """Return the canvas coordinates of the center of a cell
         """
-        return 1 + int((x+0.5)*self.cellWidth), 1 + int((y+0.5)*self.cellHeight)
+        return (1 + int((x+0.5)*(self.cellWidth+1)),
+                1 + int((y+0.5)*(self.cellHeight+1)))
+
+    def get_cell(self, x, y):
+        x = int(self.canvas.canvasx(x))
+        y = int(self.canvas.canvasy(y))
+        print(x, y)
+        return x // (self.cellWidth + 1), y // (self.cellHeight + 1)
 
     def hide_layer(self, indicator):
         self.get_layer(indicator).hide()
 
+        self.state.set(True)
+
     def show_layer(self, indicator):
         self.get_layer(indicator).show()
+
+        self.state.set(True)
 
     def clear_layer(self, indicator):
         self.get_layer(indicator).clear()
@@ -118,6 +143,8 @@ class GriddedFrame(tk.Frame):
         self.layers.insert(index+1, self.layers.pop(index))
         self.update_z()
 
+        self.state.set(True)
+
     def lower_layer(self, indicator):
         layer = self.get_layer(indicator)
         index = self.layers.index(layer)
@@ -129,3 +156,15 @@ class GriddedFrame(tk.Frame):
 
     def _configure(self):
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def _bind(self, *args):
+        super().bind(*args)
+
+    def _unbind(self, *args):
+        super().bind(*args)
+
+    def __getattribute__(self, name):
+        if name in ("bind", "unbind"):
+            return getattr(self.canvas, name)
+        else:
+            return super().__getattribute__(name)
