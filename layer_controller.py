@@ -76,18 +76,13 @@ class LayerController(tk.Frame):
         self._update_listbox()
 
     def on_listbox_selected(self, _event):
-        print(self.listbox.curselection())
         self.canvas.select_layer(self.selectedLayer)
-        print(self.canvas.currentLayer)
 
     # MISC
 
     @property
     def selectedLayer(self):
-        print(self.listbox.size())
-        print(self.listbox.curselection())
         index = self.listbox.size() - self.listbox.curselection()[0]
-        print(index)
         return self.canvas.layers[index - 1]
 
     # PRIVATE METHODS
